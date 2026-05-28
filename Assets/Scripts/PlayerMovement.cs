@@ -1,23 +1,22 @@
 using UnityEngine;
 
-[RequireComponent(typeof(CharacterController))]
-public class PlayerMovement : MonoBehaviour
+public class Player : MonoBehaviour
 {
     [Header("Movement")]
-    public float moveSpeed = 5f;
+    public float moveSpeed = 6f;
     public float rotationSpeed = 10f;
-    public float jumpHeight = 1.5f;
-    public float gravity = -9.81f;
+    public float jumpHeight = 2f;
+    public float gravity = -20f;
 
     [Header("Mouse Look")]
-    public Transform cameraPivot;
+    public Transform cameraHolder;
     public float mouseSensitivity = 200f;
-    public float minLookAngle = -40f;
-    public float maxLookAngle = 80f;
+    public float minLookAngle = -60f;
+    public float maxLookAngle = 60f;
 
     private CharacterController controller;
     private Vector3 velocity;
-    private float xRotation;
+    private float xRotation = 0f;
 
     void Start()
     {
@@ -29,25 +28,26 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-        Move();
+        MovePlayer();
         MouseLook();
     }
 
-    void Move()
+    void MovePlayer()
     {
         float horizontal = Input.GetAxis("Horizontal");
         float vertical = Input.GetAxis("Vertical");
 
         Vector3 move = transform.right * horizontal + transform.forward * vertical;
-
+        
         controller.Move(move * moveSpeed * Time.deltaTime);
 
-        // Jump
+        // Ground Check
         if (controller.isGrounded && velocity.y < 0)
         {
             velocity.y = -2f;
         }
 
+        // Jump
         if (Input.GetButtonDown("Jump") && controller.isGrounded)
         {
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
@@ -55,6 +55,7 @@ public class PlayerMovement : MonoBehaviour
 
         // Gravity
         velocity.y += gravity * Time.deltaTime;
+
         controller.Move(velocity * Time.deltaTime);
     }
 
@@ -63,13 +64,13 @@ public class PlayerMovement : MonoBehaviour
         float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
         float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
 
-        // Rotate player left/right
+        // Left & Right Rotation
         transform.Rotate(Vector3.up * mouseX);
 
-        // Rotate camera up/down
+        // Up & Down Rotation
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, minLookAngle, maxLookAngle);
 
-        cameraPivot.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+        cameraHolder.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
     }
 }
